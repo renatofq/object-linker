@@ -1,3 +1,19 @@
+/*
+  Copyright 2016 Renato Fernandes de Queiroz
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+
 package org.renatofq.linker.impl;
 
 import java.io.BufferedReader;
@@ -14,21 +30,21 @@ import java.util.Map;
 import org.renatofq.linker.impl.ObjectLinkerImpl.ObjectData;
 
 public class ObjectDataSource {
-	
+
 	// TODO create a dynamic setting
 	private Path path = Paths.get("./obj/");
 
 	public void saveObjects(Map<Integer, ObjectData> objectMap) throws IOException {
-		// FIXME: if some exception occurs during this 
+		// FIXME: if some exception occurs during this
 		// method the base will be corrupted
 		for (Map.Entry<Integer, ObjectData> entry : objectMap.entrySet()) {
 			Path file = path.resolve(generateObjectFileName(entry.getKey(), entry.getValue()));
 			try (BufferedWriter writer = getBufferWriter(file)) {
 				writer.write(entry.getValue().getContent());
-			} 
+			}
 		}
 	}
-	
+
 	public void loadObjects(Map<Integer, ObjectData> objectMap) throws IOException {
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
@@ -55,15 +71,15 @@ public class ObjectDataSource {
 			return new ObjectData(className, strBuilder.toString());
 		}
 	}
-	
+
 	private static IdClassNamePair validateObjectFileName(String filename) {
 		String[] nameParts = filename.split("[\\-\\.]");
-    	if (nameParts.length == 3 
-    			&& nameParts[0].length() == 36 
-    			&& nameParts[1].length() > 1 
+    	if (nameParts.length == 3
+    			&& nameParts[0].length() == 36
+    			&& nameParts[1].length() > 1
     			&& "json".equalsIgnoreCase(nameParts[2])
     			) {
-    
+
     		try {
     			return new IdClassNamePair(fromHexString(nameParts[0]), nameParts[1]);
     		} catch (IllegalArgumentException e) {
@@ -83,29 +99,29 @@ public class ObjectDataSource {
 	}
 
 	private static BufferedWriter getBufferWriter(Path file) throws IOException {
-		return Files.newBufferedWriter(file, 
-					StandardCharsets.UTF_8, 
-					StandardOpenOption.CREATE, 
+		return Files.newBufferedWriter(file,
+					StandardCharsets.UTF_8,
+					StandardOpenOption.CREATE,
 					StandardOpenOption.TRUNCATE_EXISTING);
 	}
-	
+
 	private static BufferedReader getBufferedReader(Path file) throws IOException {
-		return Files.newBufferedReader(file, 
+		return Files.newBufferedReader(file,
 					StandardCharsets.UTF_8);
 	}
-	
+
 	private static String toHexString(int value) {
 		return String.format("%08X", value);
 	}
-	
+
 	private static int fromHexString(String value) {
 		return Integer.parseUnsignedInt(value, 16);
 	}
-	
+
 	private static class IdClassNamePair {
 		private int id;
 		private String className;
-		
+
 		IdClassNamePair (int id, String className) {
 			this.id = id;
 			this.className = className;

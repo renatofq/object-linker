@@ -1,3 +1,19 @@
+/*
+  Copyright 2016 Renato Fernandes de Queiroz
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+
 package org.renatofq.linker.impl;
 
 import java.io.IOException;
@@ -10,7 +26,7 @@ import org.renatofq.linker.LinkNotFoundException;
 import org.renatofq.linker.ObjectLinker;
 
 public class ObjectLinkerImpl implements ObjectLinker {
-	
+
 	static class ObjectData implements Serializable {
 
 		private static final long serialVersionUID = 1L;
@@ -18,12 +34,12 @@ public class ObjectLinkerImpl implements ObjectLinker {
 		private String className;
 		private String content;
 
-		
+
 		public ObjectData(String className, String content) {
 			this.className = className;
 			this.content = content;
 		}
-		
+
 		public String getClassName() {
 			return className;
 		}
@@ -69,21 +85,21 @@ public class ObjectLinkerImpl implements ObjectLinker {
 		public <O> void fillObject(O object) {
 			ObjectStringer.fillFromString(content, object);
 		}
-		
+
 		public static <O> ObjectData fromObject(O object) {
 			String className = object.getClass().getSimpleName();
 			String content = ObjectStringer.toString(object);
 			return new ObjectData(className, content);
 		}
 	}
-	
+
 	private Map<Integer, ObjectData> objectMap = new ConcurrentHashMap<>();
 
 	@Override
 	public <A, B> void link(A a, B b) {
 		ObjectData dataA = ObjectData.fromObject(a);
 		ObjectData dataB = ObjectData.fromObject(b);
-		
+
 		objectMap.put(dataA.hashCode(), dataB);
 	}
 
@@ -108,7 +124,7 @@ public class ObjectLinkerImpl implements ObjectLinker {
 			throw new RuntimeException("Error while syncing objects", e);
 		}
 	}
-	
+
 	void load(ObjectDataSource datasource) {
 		try {
 			datasource.loadObjects(objectMap);
@@ -116,5 +132,5 @@ public class ObjectLinkerImpl implements ObjectLinker {
 			throw new RuntimeException("Error while loading objects", e);
 		}
 	}
-	
+
 }
